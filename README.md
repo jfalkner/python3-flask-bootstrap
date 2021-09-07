@@ -1,15 +1,113 @@
 # Python, Flask and Postgres
 
-This is a bootstrap of a common dev stack. It has bits of code for writing a backend, unit tests, integration tests and code coverage.
+This is a bootstrap of a common Python3-based Web API dev stack. It has bits of code
+for writing a backend, unit tests, integration tests and code coverage. An update was
+made in part using the code from [flask-on-docker](https://github.com/testdrivenio/flask-on-docker), which is another nice example!
 
-Here are the assumptions.  
+Here are the assumptions.
 
+* Docker containers are used for everything and docker-compose makes it easy to run them
 * Python/Flask used for one or more backend services
+* Postgres is the database
+* gunicorn/nginx for prod-style deployment
 * Selenium integration tests
+* Plain SQL datamodel (No ORM! -- more on this later)
 
-Eventually, I'll switch to have `docker-compose` is spin up the full stack. Right now it is mostly capturing some copy-pasta for python3, flask and selenium.
+Extending the example to have a ReactJS for a single page app frontend will come next.
+Along with that I'll add in using selenium/web-driver for end-to-end tests along with 
+code coverage exports to the dev deployment.
 
-Extending the example to setup a postgres db and use ReactJS for a single page app frontend will come next.
+## `docker-compose` and the app
+
+The entire repository can be run with normal `docker-compose` commands.
+
+```
+# run dev mode, which does real-time reloads in Flask
+docker-compose up -d
+
+# build and restart for latest images
+docker-compose build
+docker-compose restart
+
+# tear down all resources related to the app (include postgres volumne for data)
+docker-compose down
+docker volume prune
+```
+
+Production mode can be done with the same commands above but by using `-f docker-compose.prod.yml`.
+For example, `docker-compose -f docker-compose.prod.yml up -d` runs in production mode.
+
+In development mode, there are just two services running: Flask using Python 3.9.5 and
+Postgres. You can acess the dev server by visiting [http://localhost:5000/sites](http://localhost:5000/sites), etc.
+
+In production mode, there are three services: nginx to serve static files and proxy to Flask,
+`gunicorn` running Flask at scale, and Postgres as the database. You can acess the dev server by visiting [http://localhost:1337/sites](http://localhost:1337/sites), etc.
+
+## Example Data
+
+Example data is provided in the `postgres_scripts` directory. You will find the main 
+schema as well as a mock data script. These scripts are mounted to the postgres image
+under `/var/postgres_scripts`.
+
+Run the scripts as follows:
+
+```
+# drop old data and setup all tables
+docker-compose exec db psql -U mock_dev_user -f /var/postgres_scripts/create_tables.sql postgres_dev
+
+# populate with mock data
+docker-compose exec db psql -U mock_dev_user -f /var/postgres_scripts/mock_data.sql postgres_dev
+```
+
+After data is populated, you can ad-hoc query the Postgres container to interact with
+the relational database. For example, the SQL statements you will find the API use in 
+`services/web/database/site.py` (and similar) can be run by hand. Some examples below.
+
+```
+# lauch psql in interactive mode
+docker-compose exec  db psql -U mock_dev_user postgres_dev
+
+# show the sites
+postgres_dev=# SELECT * FROM site;
+ id |  name  |  contact   |          address           | state_or_region | country | postcode_or_zip 
+----+--------+------------+----------------------------+-----------------+---------+-----------------
+  1 | Site 1 | John Smith | 123 Muffin Lane, Ann Arbor | MI              | USA     | 48103
+  2 | Site 2 |            |                            |                 |         | 
+  3 | Site 3 |            |                            |                 |         | 
+(3 rows)
+
+postgres_dev=# SELECT * FROM freezer;
+ id | name | site_id 
+----+------+---------
+  1 | -20C |       1
+  2 | -40C |       1
+(2 rows)
+
+postgres_dev=# SELECT * FROM computer;
+ id |    name    | mac | site_id 
+----+------------+-----+---------
+  1 | Computer 1 |     |       1
+  2 | Computer 2 |     |       1
+(2 rows)
+
+postgres_dev=# SELECT * FROM container;
+ id | uuid | description | freezer_id 
+----+------+-------------+------------
+(0 rows)
+
+
+# can also make the views used to show all "instruments"
+postgres_dev=# (SELECT s.id, s.name as site_name, c.id AS computer_id, NULL as freezer_id, c.name AS instrument_name FROM site AS s FULL JOIN computer AS c ON s.id = c.site_id WHERE c.id IS NOT NULL ORDER BY s.id, c.id ASC)
+postgres_dev-# UNION
+postgres_dev-# (SELECT s.id, s.name as site_name, NULL AS computer_id, f.id AS freezer_id, f.name AS freezer_name FROM site AS s FULL JOIN freezer AS f ON s.id = f.site_id WHERE f.id IS NOT NULL ORDER BY s.id, f.id ASC);
+ id | site_name | computer_id | freezer_id | instrument_name 
+----+-----------+-------------+------------+-----------------
+  1 | Site 1    |           1 |            | Computer 1
+  1 | Site 1    |             |          2 | -40C
+  1 | Site 1    |           2 |            | Computer 2
+  1 | Site 1    |             |          1 | -20C
+(4 rows)
+```
 
 ## Testing Manually
 
