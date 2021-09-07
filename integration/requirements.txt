@@ -1,2 +1,0 @@
-coverage
-selenium==3.6.0

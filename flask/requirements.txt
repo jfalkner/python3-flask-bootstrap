@@ -1,4 +1,0 @@
-Flask==0.12.0
-
-# code coverage reports
-coverage
