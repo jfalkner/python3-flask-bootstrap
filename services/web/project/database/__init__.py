@@ -1,3 +1,18 @@
+"""Core Postgres database logic
+
+These are core features related to using Postgres. They are kept here in one place so
+that the other database API don't need to remake them and use them consistently.
+
+* query() ensures that connections and cursors are correctly opened and closed. It also
+  ensures queries that modify the database correctly commit results.
+
+* paginate() modifies queries to allow paging through results to ensure not too much
+  memory is used during queries and that the web UI can load and show partial results
+  quickly while loading full data.
+
+* read(), delete() and update() abstract the main CRUD actions that are later
+  used for the various tables: site, computer, freezer and container.
+"""
 import os
 
 from psycopg2 import connect, sql

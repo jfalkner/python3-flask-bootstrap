@@ -1,3 +1,10 @@
+"""Web API for sites
+
+This has a pattern of a custom tuple-to-dict and dict-to-tuple method that is used
+with the `project/database/site.py` CRUD methods. 
+
+See README.md for other notes about common RESTful patterns followed here.
+"""
 from flask import (
     Blueprint,
     jsonify,
@@ -12,6 +19,7 @@ site_api = Blueprint('site_api', __name__)
 
 
 def site2dict(site_id, name, contact, address, state_or_region, country, postcode_or_zip):
+    """Coverts a tuple of data representing a site to a dict with keys"""
     return {
         'id': site_id,
         'name': name,
@@ -24,6 +32,10 @@ def site2dict(site_id, name, contact, address, state_or_region, country, postcod
 
 
 def dict2site(site):
+    """Converts a dictionary representation of a site back to a tuple of values
+
+    This is the inverse of site2dict()
+    """
     return (
         site['site_id'],
         site['name'],

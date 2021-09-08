@@ -19,6 +19,7 @@ def delete_site(site_id):
 
 
 def update_site(site_id, name, contact, address, state_or_region, country, postcode_or_zip):
+    """Custom UPSERT to do creation or lazy-updates in one database statement"""
     q = (
         'INSERT INTO site (id, name, contact, address, state_or_region, country, postcode_or_zip) '
         '    VALUES ({site_id}, {name}, {contact}, {address}, {state_or_region}, {country}, {postcode_or_zip}) '
