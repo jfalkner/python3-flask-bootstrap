@@ -44,7 +44,7 @@ In production mode, there are three services: nginx to serve static files and pr
 
 See [`docker-compose.yml`](./docker-compose.yml) for the dev config and [`docker-compose.prod.yml`](./docker-compose.prod.yml) for the production config. These files include all the extra mapped local directories that aren't strictly used here; however, generally helpful. For example, exposing static content via nginx (Flask is slow!) and have a space to stash uploaded media files.
 
-Make sure to create ENV files that support the above docker files. Copy each of these to the same named file locally.
+Make sure that the ENV files needed by the above docker files exist. If not, copy each of these to the same named file locally. They can be updated as desired to change credentials, config, etc.
 
 
 ```
