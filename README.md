@@ -246,4 +246,3 @@ Web endpoint for freezers, computers and containers were not added; however, pla
 ### Unit Tests and Integration Tests
 
 No unit or integration tests were kept in the latest update of this repo. The example focuses more-so on data modeling a specific problem. Adding back in `coverage` for Python's dev mode and selenium/web-driver based integration tests will be done in the near future. See old commits for examples.
-```
