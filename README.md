@@ -44,6 +44,42 @@ In production mode, there are three services: nginx to serve static files and pr
 
 See [`docker-compose.yml`](./docker-compose.yml) for the dev config and [`docker-compose.prod.yml`](./docker-compose.prod.yml) for the production config. These files include all the extra mapped local directories that aren't strictly used here; however, generally helpful. For example, exposing static content via nginx (Flask is slow!) and have a space to stash uploaded media files.
 
+Make sure to create ENV files that support the above docker files. Copy each of these to the same named file locally.
+
+
+```
+# cat .end.dev
+FLASK_APP=project/__init__.py
+FLASK_ENV=development
+DATABASE_URL=postgresql://mock_dev_user:mock_dev_pass@db:5432/postgres_dev
+SQL_HOST=db
+SQL_PORT=5432
+DATABASE=postgres
+APP_FOLDER=/usr/src/app
+```
+
+---
+
+```
+# cat .env.prod
+FLASK_APP=project/__init__.py
+FLASK_ENV=production
+DATABASE_URL=postgresql://mock_prod_user:mock_prod_pass@db:5432/postgres_prod
+SQL_HOST=db
+SQL_PORT=5432
+DATABASE=postgres
+APP_FOLDER=/home/app/web
+```
+
+---
+
+```
+# cat .env.prod.db 
+POSTGRES_USER=mock_prod_user
+POSTGRES_PASSWORD=mock_prod_pass
+POSTGRES_DB=postgres_prod
+```
+
 ## Example Data
 
 Example data is provided in the `postgres_scripts` directory. You will find the main 
